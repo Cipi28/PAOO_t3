@@ -1,11 +1,14 @@
 #include <iostream>
 #include <string>
 #include <iostream>
+
+
 #include <thread>
 #include <mutex>
 #include <chrono>
 #include <cstring>
 #include <memory>
+#include <semaphore>
 
 
 #include "User.h"
@@ -13,20 +16,24 @@
 #include "Semaphore.h"
 
 using namespace std;
+// counting_semaphore<int> mySemaphore(2); 
 
 mutex mtx;
 
 
-void threadFunction()
+void threadFunction(string names[])
 {
-    // Wait
-    mtx.lock(); 
-    std::cout << "\nEntered.." << endl;
+    static int i = 0;
+    string name = names[i++];
+    this_thread::sleep_for(chrono::seconds(1));
+    std::cout << "\nStart: " << name << endl;
+    lock_guard<mutex> lock(mtx);
+    // std::cout << "\nEntered.." << endl;
+    
+    names[i--] = name;
 
-    this_thread::sleep_for(chrono::seconds(2));
+    //  std::cout << "\nJust exiting.." << endl;
 
-     std::cout << "\nJust exiting.." << endl;
-    mtx.unlock(); 
 }
 
 void threadFunctionForRAIISemaphores(int id, Semaphore& semaphore)
@@ -58,20 +65,30 @@ int main()
          << "user2: "<<endl << secondUser.getUsername() <<endl << secondUser.getPassword() <<endl;
 
     
-    thread t1(threadFunction);
-    this_thread::sleep_for(chrono::seconds(1));
-    thread t2(threadFunction);
-    this_thread::sleep_for(chrono::seconds(5));
-
-    Semaphore semaphore(1);
-    thread t3(threadFunctionForRAIISemaphores, 1, ref(semaphore));
-    thread t4(threadFunctionForRAIISemaphores, 2, ref(semaphore));
+    //create an array of names
+    string names[4] = { "Ion", "Ana", "Irina", "Cosmin" };
+    thread t1(threadFunction, names);
+    thread t2(threadFunction, names);
+    thread tt1(threadFunction, names);
+    thread tt2(threadFunction, names);
 
     t1.join();
     t2.join();
+    tt1.join();
+    tt2.join();
+    cout << "Reordered array" << endl;
+    for (int i = 0; i < 4; i++)
+    {
+        cout << names[i] << endl;
+    }
+    this_thread::sleep_for(chrono::seconds(5));
 
-    t3.join();
-    t4.join();    
+    Semaphore semaphore(1);
+    // thread t3(threadFunctionForRAIISemaphores, 1, ref(semaphore));
+    // thread t4(threadFunctionForRAIISemaphores, 2, ref(semaphore));
+
+    // t3.join();
+    // t4.join();    
 
     return 0;
 }
