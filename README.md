@@ -1,1 +1,4 @@
-PAOO  -  repository for homeworks at PAOO  -  Manea Ciprian, 4.2
+PAOO
+A repository for homeworks at PAOO
+Owner: Manea Ciprian, 4.2
+
